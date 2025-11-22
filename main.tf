@@ -203,9 +203,25 @@ resource "aws_rds_cluster_instance" "this" {
   instance_class                        = try(coalesce(each.value.instance_class, var.cluster_instance_class), null)
   monitoring_interval                   = try(coalesce(each.value.monitoring_interval, var.cluster_monitoring_interval), null)
   monitoring_role_arn                   = try(aws_iam_role.rds_enhanced_monitoring[0].arn, each.value.monitoring_role_arn)
-  performance_insights_enabled          = try(coalesce(each.value.performance_insights_enabled, var.cluster_performance_insights_enabled), null)
-  performance_insights_kms_key_id       = try(coalesce(each.value.performance_insights_kms_key_id, var.cluster_performance_insights_kms_key_id), null)
-  performance_insights_retention_period = try(coalesce(each.value.performance_insights_retention_period, var.cluster_performance_insights_retention_period), null)
+  performance_insights_enabled = (
+    startswith(var.engine, "aurora")
+    ? null
+    : try(coalesce(each.value.performance_insights_enabled, var.cluster_performance_insights_enabled), null)
+  )
+
+  performance_insights_kms_key_id = (
+    startswith(var.engine, "aurora")
+    ? null
+    : try(coalesce(each.value.performance_insights_kms_key_id, var.cluster_performance_insights_kms_key_id), null)
+  )
+
+  performance_insights_retention_period = (
+    startswith(var.engine, "aurora")
+    ? null
+    : try(coalesce(each.value.performance_insights_retention_period, var.cluster_performance_insights_retention_period), null)
+  )
+
+
   # preferred_backup_window - is set at the cluster level and will error if provided here
   preferred_maintenance_window = try(coalesce(each.value.preferred_maintenance_window, var.preferred_maintenance_window), null)
   promotion_tier               = each.value.promotion_tier
